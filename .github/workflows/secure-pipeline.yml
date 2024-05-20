@@ -61,7 +61,7 @@ jobs:
           GOOGLE_PROJECT: ${{ secrets.GOOGLE_PROJECT }}
           VERSION: ${{ steps.version.outputs.VERSION }}
         run: |
-          DOCKER_IMAGE="us-central-1-docker.pkg.dev/${GOOGLE_PROJECT}/java-goof/java-goof:${VERSION}"
+          DOCKER_IMAGE="us-central-1-docker.pkg.dev/${GOOGLE_PROJECT}/java-goof/goof:${VERSION}"
           gcloud auth configure-docker us-central1-docker.pkg.dev
           docker build -t $DOCKER_IMAGE .
           docker push $DOCKER_IMAGE}
@@ -70,7 +70,7 @@ jobs:
         run: |
          export CLOUD_ONE_API_KEY=${{ secrets.TMAS_API_KEY }}
          curl -s -L https://gist.github.com/raphabot/abae09b46c29afc7c3b918b7b8ec2a5c/raw/ | bash
-         tmas scan registry:us-central1-docker.pkg.dev/$GOOGLE_PROJECT/java-goof/java-goof:latest
+         tmas scan registry:us-central1-docker.pkg.dev/$GOOGLE_PROJECT/java-goof/goof:latest
 
 #      - name: Deploy to GKE
 #        env:
