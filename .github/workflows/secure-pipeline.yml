@@ -61,7 +61,7 @@ jobs:
           GOOGLE_PROJECT: ${{ secrets.GOOGLE_PROJECT }}
           VERSION: ${{ steps.version.outputs.VERSION }}
         run: |
-          DOCKER_IMAGE="us-central-1-docker.pkg.dev/${GOOGLE_PROJECT}/java-goof/goof:${VERSION}"
+          DOCKER_IMAGE="us-central1-docker.pkg.dev/${GOOGLE_PROJECT}/java-goof/goof:${VERSION}"
           gcloud auth configure-docker us-central1-docker.pkg.dev
           docker build -t $DOCKER_IMAGE .
           docker push ${DOCKER_IMAGE}
