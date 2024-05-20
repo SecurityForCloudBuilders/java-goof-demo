@@ -19,7 +19,7 @@ jobs:
       run:
         working-directory: todolist-goof
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4.1.1
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
@@ -32,27 +32,39 @@ jobs:
           push: false
           tags: java-goof:latest
 
-      - name: Install kubectl
-        uses: azure/setup-kubectl@v2.0
+      - id: auth
+        uses: google-github-actions/auth@v2
         with:
-          version: 'v1.24.0'
-        id: install
+          credentials_json: "${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}"
+      
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+      
+      - name: Install gke-gcloud-auth-plugin
+        run: gcloud components install kubectl
 
-      - name: install the gcloud cli
-        uses: google-github-actions/setup-gcloud@v0
-        with:
-          project_id: ${{ secrets.GOOGLE_PROJECT }}
-          service_account_key: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
-          install_components: 'gke-gcloud-auth-plugin'
-          export_default_credentials: true
+      - name: Check gke-gcloud-auth-plugin
+        run: kubectl version --client
+      
+      - name: Use gcloud CLI
+        run: gcloud info
+
+      - name: Docker auth
+        run: gcloud auth configure-docker us-central-1-docker.pkg.dev --quiet
+
+      - name: Set version
+        id: version
+        run: echo "VERSION=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
       - name: build and push the docker image
         env:
           GOOGLE_PROJECT: ${{ secrets.GOOGLE_PROJECT }}
+          VERSION: ${{ steps.version.outputs.VERSION }}
         run: |
-          gcloud auth configure-docker us-central-1-docker.pkg.dev
-          gcloud build -t us-central1-docker.pkg.dev/$GOOGLE_PROJECT/java-goof/java-goof:latest .
-          docker push us-central1-docker.pkg.dev/$GOOGLE_PROJECT/java-goof/java-goof:latest
+          DOCKER_IMAGE="us-central-1-docker.pkg.dev/${GOOGLE_PROJECT}/java-goof/java-goof:${VERSION}"
+          gcloud auth configure-docker us-central1-docker.pkg.dev
+          docker build -t $DOCKER_IMAGE .
+          docker push $DOCKER_IMAGE}
 
       - name: Trend Cloud One Container Security Scan Action 
         run: |
@@ -63,6 +75,7 @@ jobs:
 #      - name: Deploy to GKE
 #        env:
 #          GOOGLE_PROJECT: ${{ secrets.GOOGLE_PROJECT }}
+#          VERSION: ${{ steps.version.outputs.VERSION }}
 #        run: |
 #          gcloud container clusters get-credentials igorsdevcluster --region us-central1
 #          sed -i "s/GOOGLE_PROJECT/$GOOGLE_PROJECT/g" k8s/java-goof.yaml
