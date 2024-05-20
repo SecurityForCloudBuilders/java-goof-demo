@@ -67,6 +67,9 @@ jobs:
           docker push ${DOCKER_IMAGE}
 
       - name: Trend Cloud One Container Security Scan Action 
+        env:
+          GOOGLE_PROJECT: ${{ secrets.GOOGLE_PROJECT }}
+          VERSION: ${{ steps.version.outputs.VERSION }}
         run: |
          DOCKER_IMAGE="us-central1-docker.pkg.dev/${GOOGLE_PROJECT}/java-goof/goof:${VERSION}"
          export TMAS_API_KEY=${{ secrets.TMAS_API_KEY }}
