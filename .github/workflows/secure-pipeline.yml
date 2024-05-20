@@ -38,38 +38,32 @@ jobs:
           version: 'v1.24.0'
         id: install
 
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
+      - name: install the gcloud cli
+        uses: google-github-actions/setup-gcloud@v0
         with:
-          role-to-assume: ${{ secrets.AWS_IAM_ROLE }}
-          role-session-name: JavaGoofDeployment
-          aws-region: us-west-2        
+          project_id: ${{ secrets.GOOGLE_PROJECT }}
+          service_account_key: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+          install_components: 'gke-gcloud-auth-plugin'
+          export_default_credentials: true
 
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
-    
-      - name: Build, tag, and push image to Amazon ECR
+      - name: build and push the docker image
         env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: cs-reinvent-demo
-          IMAGE_TAG: ${{ github.sha }}
+          GOOGLE_PROJECT: ${{ secrets.GOOGLE_PROJECT }}
         run: |
-          DOCKER_BUILDKIT=1 docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
-          docker push -a $ECR_REGISTRY/$ECR_REPOSITORY
+          gcloud auth configure-docker us-central-1-docker.pkg.dev
+          gcloud build -t us-central1-docker.pkg.dev/$GOOGLE_PROJECT/java-goof/java-goof:latest .
+          docker push us-central1-docker.pkg.dev/$GOOGLE_PROJECT/java-goof/java-goof:latest
 
-      - name: Trend Cloud One Container Security Scan Action
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: cs-reinvent-demo      
+      - name: Trend Cloud One Container Security Scan Action 
         run: |
          export CLOUD_ONE_API_KEY=${{ secrets.TMAS_API_KEY }}
          curl -s -L https://gist.github.com/raphabot/abae09b46c29afc7c3b918b7b8ec2a5c/raw/ | bash
-         tmas scan registry:$ECR_REGISTRY/$ECR_REPOSITORY
+         tmas scan registry:us-central1-docker.pkg.dev/$GOOGLE_PROJECT/java-goof/java-goof:latest
 
-      - name: Update kube config
-        run: aws eks update-kubeconfig --name igorsCluster --region us-west-2  
-
-      - name: Deploy to EKS
-        run: |
-          kubectl apply -f k8s/java-goof.yaml
+#      - name: Deploy to GKE
+#        env:
+#          GOOGLE_PROJECT: ${{ secrets.GOOGLE_PROJECT }}
+#        run: |
+#          gcloud container clusters get-credentials igorsdevcluster --region us-central1
+#          sed -i "s/GOOGLE_PROJECT/$GOOGLE_PROJECT/g" k8s/java-goof.yaml
+#          kubectl apply -f k8s/java-goof.yaml

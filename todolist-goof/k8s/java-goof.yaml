@@ -1,3 +1,8 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: java-goof
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -17,7 +22,7 @@ spec:
     spec:
       containers:
       - name: java-goof
-        image: 199694721883.dkr.ecr.us-west-2.amazonaws.com/cs-reinvent-demo:latest
+        image: us-central1-docker.pkg.dev/GOOGLE_PROJECT/java-goof/java-goof:latest
         ports:
         - containerPort: 8080
 ---
