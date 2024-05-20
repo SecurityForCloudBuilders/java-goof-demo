@@ -76,11 +76,11 @@ jobs:
          curl -s -L https://gist.github.com/raphabot/abae09b46c29afc7c3b918b7b8ec2a5c/raw/ | bash
          tmas scan registry:${DOCKER_IMAGE}
 
-#      - name: Deploy to GKE
-#        env:
-#          GOOGLE_PROJECT: ${{ secrets.GOOGLE_PROJECT }}
-#          VERSION: ${{ steps.version.outputs.VERSION }}
-#        run: |
-#          gcloud container clusters get-credentials igorsdevcluster --region us-central1
-#          sed -i "s/GOOGLE_PROJECT/$GOOGLE_PROJECT/g" k8s/java-goof.yaml
-#          kubectl apply -f k8s/java-goof.yaml
+      - name: Deploy to GKE
+        env:
+          GOOGLE_PROJECT: ${{ secrets.GOOGLE_PROJECT }}
+          VERSION: ${{ steps.version.outputs.VERSION }}
+        run: |
+          gcloud container clusters get-credentials igorsdevcluster --region us-central1
+          sed -i "s/GOOGLE_PROJECT/$GOOGLE_PROJECT/g; s/VERSION/$VERSION/g" k8s/java-goof.yaml
+          kubectl apply -f k8s/java-goof.yaml
