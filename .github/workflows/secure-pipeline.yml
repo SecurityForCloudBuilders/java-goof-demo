@@ -66,7 +66,7 @@ jobs:
           docker build -t $DOCKER_IMAGE .
           docker push ${DOCKER_IMAGE}
 
-      - name: Trend Cloud One Container Security Scan Action 
+      - name: Trend Micro Container Vulnerability Scan  
         env:
           GOOGLE_PROJECT: ${{ secrets.GOOGLE_PROJECT }}
           VERSION: ${{ steps.version.outputs.VERSION }}
@@ -75,6 +75,16 @@ jobs:
          export TMAS_API_KEY=${{ secrets.TMAS_API_KEY }}
          curl -s -L https://gist.github.com/raphabot/abae09b46c29afc7c3b918b7b8ec2a5c/raw/ | bash
          tmas scan registry:${DOCKER_IMAGE}
+      
+      - name: Trend Micro Container Secret Scan  
+        env:
+          GOOGLE_PROJECT: ${{ secrets.GOOGLE_PROJECT }}
+          VERSION: ${{ steps.version.outputs.VERSION }}
+        run: |
+         DOCKER_IMAGE="us-central1-docker.pkg.dev/${GOOGLE_PROJECT}/java-goof/goof:${VERSION}"
+         export TMAS_API_KEY=${{ secrets.TMAS_API_KEY }}
+         curl -s -L https://gist.github.com/raphabot/abae09b46c29afc7c3b918b7b8ec2a5c/raw/ | bash
+         tmas scan secrets registry:${DOCKER_IMAGE}
 
       - name: Deploy to GKE
         env:
