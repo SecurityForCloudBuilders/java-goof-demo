@@ -77,6 +77,7 @@ jobs:
           curl -s -L https://github.com/CrowdStrike/ivan/releases/download/1.0.6/ivan_1.0.6_Linux_x86_64.tar.gz
           tar xvzf ivan_1.0.6_Linux_x86_64.tar.gz
           chmod +ux ivan
+          docker load < ${DOCKER_IMAGE}
           ivan -region us-1 -image ${DOCKER_IMAGE}
     
       - name: Deploy to GKE
