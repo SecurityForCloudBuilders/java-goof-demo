@@ -61,36 +61,29 @@ jobs:
           GOOGLE_PROJECT: ${{ secrets.GOOGLE_PROJECT }}
           VERSION: ${{ steps.version.outputs.VERSION }}
         run: |
-          DOCKER_IMAGE="us-central1-docker.pkg.dev/${GOOGLE_PROJECT}/java-goof/goof:${VERSION}"
+          DOCKER_IMAGE="us-central1-docker.pkg.dev/${GOOGLE_PROJECT}/igors-java-goof/java-goof:${VERSION}"
           gcloud auth configure-docker us-central1-docker.pkg.dev
           docker build -t $DOCKER_IMAGE .
           docker push ${DOCKER_IMAGE}
 
-      - name: Trend Micro Container Vulnerability Scan  
+      - name: Falcon Image Vulnerability Analysis (IVAN)  
         env:
           GOOGLE_PROJECT: ${{ secrets.GOOGLE_PROJECT }}
           VERSION: ${{ steps.version.outputs.VERSION }}
         run: |
-         DOCKER_IMAGE="us-central1-docker.pkg.dev/${GOOGLE_PROJECT}/java-goof/goof:${VERSION}"
-         export TMAS_API_KEY=${{ secrets.TMAS_API_KEY }}
-         curl -s -L https://gist.github.com/raphabot/abae09b46c29afc7c3b918b7b8ec2a5c/raw/ | bash
-         tmas scan registry:${DOCKER_IMAGE}
-      
-      - name: Trend Micro Container Secret Scan  
-        env:
-          GOOGLE_PROJECT: ${{ secrets.GOOGLE_PROJECT }}
-          VERSION: ${{ steps.version.outputs.VERSION }}
-        run: |
-         DOCKER_IMAGE="us-central1-docker.pkg.dev/${GOOGLE_PROJECT}/java-goof/goof:${VERSION}"
-         export TMAS_API_KEY=${{ secrets.TMAS_API_KEY }}
-         curl -s -L https://gist.github.com/raphabot/abae09b46c29afc7c3b918b7b8ec2a5c/raw/ | bash
-         tmas scan secrets registry:${DOCKER_IMAGE}
-
+          DOCKER_IMAGE="us-central1-docker.pkg.dev/${GOOGLE_PROJECT}/igors-java-goof/java-goof:${VERSION}"
+          export FALCON_CLIENT_ID=${{ secrets.CLIENT_ID }}
+          export FALCON_CLIENT_SECRET=${{ secrets.CLIENT_SECRET }}
+          curl -s -L https://github.com/CrowdStrike/ivan/releases/download/1.0.6/ivan_1.0.6_Linux_x86_64.tar.gz
+          tar xvzf ivan_1.0.6_Linux_x86_64.tar.gz
+          chmod +ux ivan
+          ivan -region us-1 -image ${DOCKER_IMAGE}
+    
       - name: Deploy to GKE
         env:
           GOOGLE_PROJECT: ${{ secrets.GOOGLE_PROJECT }}
           VERSION: ${{ steps.version.outputs.VERSION }}
         run: |
-          gcloud container clusters get-credentials igorsdevcluster --region us-central1-a
+          gcloud container clusters get-credentials igors-gke-cluster --region us-central1-c
           sed -i "s/GOOGLE_PROJECT/$GOOGLE_PROJECT/g; s/VERSION/$VERSION/g" k8s/java-goof.yaml
           kubectl apply -f k8s/java-goof.yaml
