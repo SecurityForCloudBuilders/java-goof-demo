@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
       - name: java-goof
-        image: us-central1-docker.pkg.dev/GOOGLE_PROJECT/java-goof/goof:VERSION
+        image: us-central1-docker.pkg.dev/GOOGLE_PROJECT/igors-java-goof/java-goof:VERSION
         ports:
         - containerPort: 8080
 ---
