@@ -78,6 +78,8 @@ jobs:
           tar xvzf ivan_1.0.6_Linux_x86_64.tar.gz
           chmod +x ivan
           docker pull ${DOCKER_IMAGE}
+          echo "Moving the binary to \"/usr/local/bin/\". It might request root access."
+          sudo mv ivan /usr/local/bin/
           ivan -region us-1 -image ${DOCKER_IMAGE}
     
       - name: Deploy to GKE
