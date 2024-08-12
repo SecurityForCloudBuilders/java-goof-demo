@@ -66,19 +66,19 @@ jobs:
           docker build -t $DOCKER_IMAGE .
           docker push ${DOCKER_IMAGE}
 
-    #  - name: Falcon Image Vulnerability Analysis (IVAN)  
-    #    env:
-    #      GOOGLE_PROJECT: ${{ secrets.GOOGLE_PROJECT }}
-    #      VERSION: ${{ steps.version.outputs.VERSION }}
-    #    run: |
-    #      DOCKER_IMAGE="us-central1-docker.pkg.dev/${GOOGLE_PROJECT}/igors-java-goof/java-goof:${VERSION}"
-    #      export FALCON_CLIENT_ID=${{ secrets.CLIENT_ID }}
-    #      export FALCON_CLIENT_SECRET=${{ secrets.CLIENT_SECRET }}
-    #      curl -s -L https://github.com/CrowdStrike/ivan/releases/download/1.0.6/ivan_1.0.6_Linux_x86_64.tar.gz
-    #      tar xvzf ivan_1.0.6_Linux_x86_64.tar.gz
-    #      chmod +ux ivan
-    #      docker load < ${DOCKER_IMAGE}
-    #      ivan -region us-1 -image ${DOCKER_IMAGE}
+      - name: Falcon Image Vulnerability Analysis (IVAN)  
+        env:
+          GOOGLE_PROJECT: ${{ secrets.GOOGLE_PROJECT }}
+          VERSION: ${{ steps.version.outputs.VERSION }}
+        run: |
+          DOCKER_IMAGE="us-central1-docker.pkg.dev/${GOOGLE_PROJECT}/igors-java-goof/java-goof:${VERSION}"
+          export FALCON_CLIENT_ID=${{ secrets.CLIENT_ID }}
+          export FALCON_CLIENT_SECRET=${{ secrets.CLIENT_SECRET }}
+          curl -s -L https://github.com/CrowdStrike/ivan/releases/download/1.0.6/ivan_1.0.6_Linux_x86_64.tar.gz
+          tar xvzf ivan_1.0.6_Linux_x86_64.tar.gz
+          chmod +ux ivan
+          docker image pull ${DOCKER_IMAGE}
+          ivan -region us-1 -image ${DOCKER_IMAGE}
     
       - name: Deploy to GKE
         env:
